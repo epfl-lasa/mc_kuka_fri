@@ -13,15 +13,10 @@ RobotClient::RobotClient(AppState & state, const std::string & name)
   if(!app_.connect(port, host.c_str()))
   {
     mc_rtc::log::error_and_throw("[MCKukaFRI] Connection to {}:{} failed", host, port);
+  } else {
+    mc_rtc::log::success("[MCKukaFRI] Connection to {}:{} OK!", host, port);
   }
-  // XXX Do we need to do this or can we be sure that we have a valid state after connection?
-  kuka::fri::LBRClient::waitForCommand();
-  // Check that the robot has a compatible command mode
-  auto mode = robotState().getClientCommandMode();
-  if(mode != kuka::fri::TORQUE && mode != kuka::fri::POSITION)
-  {
-    mc_rtc::log::error_and_throw("[MCKukaFRI] Only support TORQUE and POSITION control modes");
-  }
+  
   updateMcRtcInputs();
 }
 
