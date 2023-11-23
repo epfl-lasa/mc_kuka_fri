@@ -7,6 +7,9 @@ project(
 
 find_package(mc_rtc REQUIRED)
 
+set(FORCE_SENSOR_ARG True)
+set(GRABBER_ARG True)
+
 set(CATKIN_INSTALL_INTO_PREFIX_ROOT FALSE)
 find_description_package(iiwa_description)
 
@@ -23,6 +26,7 @@ include(GNUInstallDirs)
 set(INSTALL_DATADIR ${CMAKE_INSTALL_FULL_DATADIR}/${PROJECT_NAME})
 
 # xacro files used by both robots
+set(IIWA_DESCRIPTION_PATH "/usr/local/share/iiwa_description")
 set(xacro_DEPS
     ${IIWA_DESCRIPTION_PATH}/urdf/iiwa.gazebo.xacro
     ${IIWA_DESCRIPTION_PATH}/urdf/iiwa.transmission.xacro
@@ -35,7 +39,7 @@ function(generate_iiwa_module MODEL)
   set(XACRO_IN ${IIWA_DESCRIPTION_PATH}/urdf/${MODEL}.urdf.xacro)
   add_custom_command(
     OUTPUT ${URDF_OUT}
-    COMMAND ${XACRO} -o ${URDF_OUT} -i ${XACRO_IN}
+    COMMAND ${XACRO} -o ${URDF_OUT} -i ${XACRO_IN} force_sensor:=${FORCE_SENSOR_ARG} grabber:=${GRABBER_ARG}
     DEPENDS ${xacro_DEPS} ${XACRO_IN}
             ${IIWA_DESCRIPTION_PATH}/urdf/${MODEL}.xacro
     COMMENT "Generate ${MODEL}.urdf")
@@ -74,6 +78,7 @@ function(generate_iiwa_module MODEL)
                       DEPENDS ${CONVEX_OUT})
     install(FILES ${CONVEX_OUT} DESTINATION ${INSTALL_DATADIR}/convex/${MODEL}/)
   endforeach()
+  
 endfunction()
 
 generate_iiwa_module(iiwa7)
