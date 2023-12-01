@@ -27,6 +27,8 @@ void RobotClient::waitForCommand()
   std::lock_guard<std::mutex> lck(state_.gc_mutex);
   mc_rtc::log::info("[RobotClient] waitForCommand");
   updateMcRtcInputs();
+  if(robotState().getClientCommandMode() == kuka::fri::TORQUE) { robotCommand().setTorque(torques_command_.data()); }
+
 }
 
 void RobotClient::updateMcRtcInputs()
