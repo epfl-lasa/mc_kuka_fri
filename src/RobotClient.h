@@ -5,6 +5,7 @@
 #include <kuka/fri/ClientApplication.h>
 #include <kuka/fri/LBRClient.h>
 #include <kuka/fri/UdpConnection.h>
+#include <thread>
 
 namespace mc_kuka_fri
 {
