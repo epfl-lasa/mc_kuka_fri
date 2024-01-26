@@ -5,8 +5,9 @@ namespace mc_kuka_fri
 
 RobotClient::RobotClient(AppState & state, const std::string & name)
 : state_(state), app_(connection_, *this), name_(name), torques_measured_(7, 0.0), joints_measured_(7, 0.0),
-  torques_command_(7, 0.0), joints_command_(7, 0.0)
+  torques_command_(7, 0.0), joints_command_(7, 0.0), vel_estimated_(7, 0.0), joints_measured_prev_(7, 0.0)
 {
+  begin = std::chrono::steady_clock::now();
   auto config = state.gc.configuration().config("KukaFRI")(name);
   std::string host = config("host");
   int port = config("port", 30200);
@@ -33,13 +34,35 @@ void RobotClient::waitForCommand()
 
 void RobotClient::updateMcRtcInputs()
 {
+  joints_measured_prev_ = joints_measured_;
+  mc_rtc::log::info("[RobotClient] updateMcRtcInputs");
   mc_rtc::log::info("[RobotClient] Command mode {}", robotState().getClientCommandMode());
   const auto & state = robotState();
   std::memcpy(joints_measured_.data(), state.getMeasuredJointPosition(), 7 * sizeof(double));
   std::memcpy(torques_measured_.data(), state.getMeasuredTorque(), 7 * sizeof(double));
   state_.gc.setEncoderValues(name_, joints_measured_);
   state_.gc.setJointTorques(name_, torques_measured_);
-  mc_rtc::log::info("[RobotClient] joints_measured_ {} - {}", joints_measured_[0], joints_measured_[2]);
+
+  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()/1000000.0;
+  mc_rtc::log::info("[RobotClient] loop duration {}", duration);
+  for (size_t i = 0; i < 7; i++) {
+    if(duration < 0.001 || duration > 0.9) { // avoid inf value at the start
+      vel_estimated_[i] = 0;
+    } else {
+      vel_estimated_[i] = 0.2*(joints_measured_[i] - joints_measured_prev_[i])/(duration) + (1 - 0.2)*vel_estimated_[i];
+    }
+    begin = std::chrono::steady_clock::now();
+  }
+  state_.gc.setEncoderVelocities(name_, vel_estimated_);
+  mc_rtc::log::info("[RobotClient] joints_measured_ \n {}  \n {} \n {} \n {} \n {} \n {} \n {}", joints_measured_[0] \
+  , joints_measured_[1], joints_measured_[2], joints_measured_[3], joints_measured_[4], joints_measured_[5], joints_measured_[6]);
+  mc_rtc::log::info("[RobotClient] vel_estimated_ \n {}  \n {} \n {} \n {} \n {} \n {} \n {}", vel_estimated_[0] \
+  , vel_estimated_[1], vel_estimated_[2], vel_estimated_[3], vel_estimated_[4], vel_estimated_[5], vel_estimated_[6]);
+  mc_rtc::log::info("[RobotClient] torques_measured_ \n {}  \n {} \n {} \n {} \n {} \n {} \n {}", torques_measured_[0] \
+  , torques_measured_[1], torques_measured_[2], torques_measured_[3], torques_measured_[4], torques_measured_[5], torques_measured_[6]);
+
+
   // joints_measured_ OK
 
 }
@@ -63,10 +86,14 @@ void RobotClient::updateKukaCommand()
     torques_command_[i] = robot.jointTorque()[mbcIdx][0];
     joints_command_[i] = robot.q()[mbcIdx][0];
   }
-  mc_rtc::log::info("[RobotClient] joints_command_ {} - {}", joints_command_[0], joints_command_[2]);
-  mc_rtc::log::info("[RobotClient] torques_command_ {} - {}", torques_command_[0], torques_command_[2]);
+  mc_rtc::log::info("[RobotClient] joints_command_ \n {}  \n {} \n {} \n {} \n {} \n {} \n {}", joints_command_[0] \
+  , joints_command_[1], joints_command_[2], joints_command_[3], joints_command_[4], joints_command_[5], joints_command_[6]);
+  mc_rtc::log::info("[RobotClient] torques_command_ \n {}  \n {} \n {} \n {} \n {} \n {} \n {}", torques_command_[0] \
+  , torques_command_[1], torques_command_[2], torques_command_[3], torques_command_[4], torques_command_[5], torques_command_[6]);
+
   mc_rtc::log::info("[RobotClient] encoder values {}", robot.encoderValues()[robot.jointIndexInMBC(0)]);
   mc_rtc::log::info("[RobotClient] Command mode {}", robotState().getClientCommandMode());
+
   robotCommand().setJointPosition(joints_command_.data());
   if(robotState().getClientCommandMode() == kuka::fri::TORQUE) { robotCommand().setTorque(torques_command_.data()); }
 }
