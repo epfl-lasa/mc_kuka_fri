@@ -91,11 +91,11 @@ void RobotClient::updateKukaCommand()
   }
 
   fdPtr_ = std::make_shared<rbd::ForwardDynamics>(robot.mb());
-
-  fdPtr_->forwardDynamics(state_.gc.robot(name_).mb(),
-  state_.gc.robot(name_).mbc());
-
+  coriolisPtr_= std::make_shared<rbd::Coriolis>(robot.mb());
+  fdPtr_->forwardDynamics(state_.gc.robot(name_).mb(), state_.gc.robot(name_).mbc());
+  
   massMatrix = fdPtr_->H();  
+  auto CoriolisMatrix = coriolisPtr_->coriolis(robot.mb(),robot.mbc());
   massTorque = massMatrix*accelerationQP;
 
   for(size_t i = 0; i < 7; ++i)

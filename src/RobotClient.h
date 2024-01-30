@@ -5,7 +5,7 @@
 #include <kuka/fri/ClientApplication.h>
 #include <kuka/fri/LBRClient.h>
 #include <kuka/fri/UdpConnection.h>
-
+#include <RBDyn/Coriolis.h>
 #include <iostream>
 #include <chrono>
 #include <ctime>   
@@ -39,6 +39,7 @@ protected:
   std::vector<double> joints_command_;
   std::thread control_thread_;
   std::shared_ptr<rbd::ForwardDynamics> fdPtr_;
+  std::shared_ptr<rbd::Coriolis> coriolisPtr_;
   Eigen::Matrix<double, 7, 7> massMatrix;
   Eigen::Matrix<double, 7, 1> accelerationQP;
   Eigen::Matrix<double, 7, 1> massTorque;
