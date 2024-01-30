@@ -42,6 +42,7 @@ protected:
   std::shared_ptr<rbd::Coriolis> coriolisPtr_;
   Eigen::Matrix<double, 7, 7> massMatrix;
   Eigen::Matrix<double, 7, 1> accelerationQP;
+  Eigen::Matrix<double, 7, 1> VelocityQP;
   Eigen::Matrix<double, 7, 1> massTorque;
 
 

@@ -88,6 +88,7 @@ void RobotClient::updateKukaCommand()
   {
     auto mbcIdx = robot.jointIndexInMBC(i);
     accelerationQP(i,0) = robot.mbc().alphaD[mbcIdx][0];
+    VelocityQP(i,0) = robot.mbc().alpha[mbcIdx][0];
   }
 
   fdPtr_ = std::make_shared<rbd::ForwardDynamics>(robot.mb());
@@ -96,7 +97,7 @@ void RobotClient::updateKukaCommand()
   
   massMatrix = fdPtr_->H();  
   auto CoriolisMatrix = coriolisPtr_->coriolis(robot.mb(),robot.mbc());
-  massTorque = massMatrix*accelerationQP;
+  massTorque = massMatrix*accelerationQP + CoriolisMatrix*VelocityQP;
 
   for(size_t i = 0; i < 7; ++i)
   {
