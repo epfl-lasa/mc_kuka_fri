@@ -38,6 +38,11 @@ protected:
   std::vector<double> torques_command_;
   std::vector<double> joints_command_;
   std::thread control_thread_;
+  std::shared_ptr<rbd::ForwardDynamics> fdPtr_;
+  Eigen::Matrix<double, 7, 7> massMatrix;
+  Eigen::Matrix<double, 7, 1> accelerationQP;
+  Eigen::Matrix<double, 7, 1> massTorque;
+
 
   std::vector<double> vel_estimated_;
   std::chrono::steady_clock::time_point begin;

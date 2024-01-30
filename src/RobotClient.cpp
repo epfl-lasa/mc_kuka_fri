@@ -80,11 +80,39 @@ void RobotClient::updateKukaCommand()
 {
   // mc_rtc::log::info("[RobotClient] updateKukaCommand");
   const auto & robot = state_.gc.robot(name_);
+
+  auto& torqueUpperLimits = robot.tu();
+  auto& torqueLowerLimits = robot.tl();
+
   for(size_t i = 0; i < 7; ++i)
   {
     auto mbcIdx = robot.jointIndexInMBC(i);
-    torques_command_[i] = robot.jointTorque()[mbcIdx][0];
+    accelerationQP(i,0) = robot.mbc().alphaD[mbcIdx][0];
+  }
+
+  fdPtr_ = std::make_shared<rbd::ForwardDynamics>(robot.mb());
+
+  fdPtr_->forwardDynamics(state_.gc.robot(name_).mb(),
+  state_.gc.robot(name_).mbc());
+
+  massMatrix = fdPtr_->H();  
+  massTorque = massMatrix*accelerationQP;
+
+  for(size_t i = 0; i < 7; ++i)
+  {
+    auto mbcIdx = robot.jointIndexInMBC(i);
+    torques_command_[i] = massTorque(i,0);
+    //torques_command_[i] = robot.jointTorque()[mbcIdx][0];
+
+    //clip Tau commands
+
+
+    double torqueLowerLimit = torqueLowerLimits[mbcIdx][0];
+    double torqueUpperLimit = torqueUpperLimits[mbcIdx][0];
+    torques_command_[i] = std::clamp(torques_command_[i] , torqueLowerLimit, torqueUpperLimit);
+
     joints_command_[i] = state_.gc.realRobot(name_).q()[mbcIdx][0];
+    // joints_command_[i] = state_.gc.robot(name_).q()[mbcIdx][0];
   }
   // mc_rtc::log::info("[RobotClient] joints_command_ \n {}  \n {} \n {} \n {} \n {} \n {} \n {}", joints_command_[0] \
   // , joints_command_[1], joints_command_[2], joints_command_[3], joints_command_[4], joints_command_[5], joints_command_[6]);
