@@ -47,9 +47,28 @@ int main(int argc, char * argv[])
     if(clients.empty()) { clients.push_back(std::make_unique<mc_kuka_fri::MainRobotClient>(state, r.name())); }
     else { clients.push_back(std::make_unique<mc_kuka_fri::RobotClient>(state, r.name())); }
   }
-  state.gc.init();
-  state.gc.running = true;
   for(auto & client : clients) { client->startControlThread(); }
+
+  // Wait until all clients have received initial sensor data before initializing the control loop
+  bool init = false;
+  while(!init)
+  {
+    init = std::all_of(clients.begin(), clients.end(), [](const auto & client) { return client->firstSensorsReceived(); });
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+  {
+    std::lock_guard<std::mutex> lck(state.gc_mutex);
+    std::map<std::string, std::vector<double>> initEncoders;
+    for(const auto & client : clients)
+    {
+      const auto & robotName = client->robotName();
+      initEncoders[robotName] = state.gc.controller().robot(robotName).encoderValues();
+    }
+    state.gc.init(initEncoders);
+    // Robots have all been intialized from sensor values, start sending commands
+    state.gc.running = true;
+  }
+
   for(auto & client : clients) { client->joinControlThread(); }
   return 0;
 }

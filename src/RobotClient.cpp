@@ -65,6 +65,7 @@ void RobotClient::updateMcRtcInputs()
 
   // joints_measured_ OK
 
+  firstSensorsReceived_ = true;
 }
 
 void RobotClient::command()
@@ -156,8 +157,11 @@ void MainRobotClient::command()
 
   std::lock_guard<std::mutex> lck(state_.gc_mutex);
   updateMcRtcInputs(); // update measured encoder positions and joint torques
-  state_.gc.run();
-  updateKukaCommand();
+  if(state_.gc.running)
+  {
+    state_.gc.run();
+    updateKukaCommand();
+  }
 }
 
 } // namespace mc_kuka_fri

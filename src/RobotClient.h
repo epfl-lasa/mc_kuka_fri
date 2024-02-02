@@ -28,11 +28,16 @@ struct RobotClient : public kuka::fri::LBRClient
 
   void joinControlThread();
 
+  inline bool firstSensorsReceived() const noexcept { return firstSensorsReceived_; }
+
+  inline const std::string & robotName() const noexcept { return name_; }
+
 protected:
   AppState & state_;
   kuka::fri::UdpConnection connection_;
   kuka::fri::ClientApplication app_;
   std::string name_;
+  std::atomic<bool> firstSensorsReceived_{false};
   std::vector<double> torques_measured_;
   std::vector<double> joints_measured_;  
   std::vector<double> joints_measured_prev_;
