@@ -70,6 +70,8 @@ void RobotClient::updateMcRtcInputs()
 
 void RobotClient::command()
 {
+  if(!state_.gc.running) { return; }
+
   kuka::fri::LBRClient::command();
 
   std::lock_guard<std::mutex> lck(state_.gc_mutex);
@@ -152,16 +154,15 @@ void RobotClient::joinControlThread()
 
 void MainRobotClient::command()
 {
+  if(!state_.gc.running) { return; }
+
   mc_rtc::log::info("[RobotClient] MainRobotClient command");
   kuka::fri::LBRClient::command();
 
   std::lock_guard<std::mutex> lck(state_.gc_mutex);
   updateMcRtcInputs(); // update measured encoder positions and joint torques
-  if(state_.gc.running)
-  {
-    state_.gc.run();
-    updateKukaCommand();
-  }
+  state_.gc.run();
+  updateKukaCommand();
 }
 
 } // namespace mc_kuka_fri

@@ -56,8 +56,8 @@ function(generate_iiwa_module MODEL)
       link_4
       link_5
       link_6
-      link_7
-      grabber)
+      link_7)
+      #grabber)
   file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cloud/${MODEL}/)
   file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/convex/${MODEL}/)
   foreach(LINK ${IIWA_LINKS})
