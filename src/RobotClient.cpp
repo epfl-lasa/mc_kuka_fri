@@ -61,6 +61,11 @@ void RobotClient::updateMcRtcInputs()
   // , torques_measured_[1], torques_measured_[2], torques_measured_[3], torques_measured_[4], torques_measured_[5], torques_measured_[6]);
 
 
+  // By default set the command to the current measured values
+  // This is overriden later by updateKukaCommand when the controller is running
+  joints_command_ = joints_measured_;
+  torques_command_ = torques_measured_;
+
   // joints_measured_ OK
 
   firstSensorsReceived_ = true;
