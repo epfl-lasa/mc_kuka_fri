@@ -23,7 +23,6 @@ include(GNUInstallDirs)
 set(INSTALL_DATADIR ${CMAKE_INSTALL_FULL_DATADIR}/${PROJECT_NAME})
 
 # xacro files used by both robots
-set(IIWA_DESCRIPTION_PATH "/usr/local/share/iiwa_description")
 set(xacro_DEPS
     ${IIWA_DESCRIPTION_PATH}/urdf/iiwa.gazebo.xacro
     ${IIWA_DESCRIPTION_PATH}/urdf/iiwa.transmission.xacro
@@ -57,7 +56,8 @@ function(generate_iiwa_module MODEL)
       link_4
       link_5
       link_6
-      link_7)
+      link_7
+      grabber)
   file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/cloud/${MODEL}/)
   file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/convex/${MODEL}/)
   foreach(LINK ${IIWA_LINKS})
@@ -75,7 +75,6 @@ function(generate_iiwa_module MODEL)
                       DEPENDS ${CONVEX_OUT})
     install(FILES ${CONVEX_OUT} DESTINATION ${INSTALL_DATADIR}/convex/${MODEL}/)
   endforeach()
-  
 endfunction()
 
 generate_iiwa_module(iiwa7)

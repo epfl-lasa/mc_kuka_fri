@@ -72,7 +72,7 @@ void RobotClient::command()
   kuka::fri::LBRClient::command();
 
   std::lock_guard<std::mutex> lck(state_.gc_mutex);
-  // mc_rtc::log::info("[RobotClient] command");
+  mc_rtc::log::info("[RobotClient] command");
   updateKukaCommand();
 }
 
