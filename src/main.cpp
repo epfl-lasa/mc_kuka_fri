@@ -2,6 +2,7 @@
 
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
+#include <mc_rtc/io_utils.h>
 
 int main(int argc, char * argv[])
 {
@@ -63,6 +64,7 @@ int main(int argc, char * argv[])
     {
       const auto & robotName = client->robotName();
       initEncoders[robotName] = state.gc.controller().robot(robotName).encoderValues();
+      mc_rtc::log::info("- Initializing encoders for robot {} to {}", robotName, mc_rtc::io::to_string(initEncoders[robotName]));
     }
     state.gc.init(initEncoders);
     // Robots have all been intialized from sensor values, start sending commands

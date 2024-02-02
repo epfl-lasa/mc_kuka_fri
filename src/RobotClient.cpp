@@ -17,8 +17,6 @@ RobotClient::RobotClient(AppState & state, const std::string & name)
   } else {
     mc_rtc::log::success("[MCKukaFRI] Connection to {}:{} OK!", host, port);
   }
-  
-  updateMcRtcInputs();
 }
 
 void RobotClient::waitForCommand()
